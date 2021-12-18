@@ -1,12 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import type { MultiHandlers } from '@backend/common/commonHandler'
 import { getPropertiesHandler, createPropertyHandler } from '@backend/handlers/propertiesHandler'
+import { execMultiHandlers } from '@backend/common/commonHandler'
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "GET") {
-    getPropertiesHandler(req, res)
-  } else if (req.method === "POST") {
-    createPropertyHandler(req, res)
-  } else {
-    res.status(400).json("Method not allowed")
-  }
+const handlers: MultiHandlers = {
+  "GET": getPropertiesHandler,
+  "POST": createPropertyHandler
 }
+
+const handler = (req: NextApiRequest, res: NextApiResponse) => {
+  execMultiHandlers(req, res, handlers)
+}
+
+export default handler
