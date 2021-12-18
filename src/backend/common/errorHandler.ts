@@ -1,4 +1,4 @@
-import type {  NextApiResponse } from 'next'
+import type { NextApiResponse } from 'next'
 import {
   CannotGetRecordError,
   CannotGetRecordListError,
@@ -33,7 +33,7 @@ export const handlerErr = (res: NextApiResponse, error: any) => {
   }
 
   // Write error to server's log
-  console.log(appError)
+  console.log({ appError })
 
   res.status(appError.status).json({
     status: appError.status,

@@ -7,7 +7,7 @@ export type MultiHandlers = Partial<Record<HttpMethods, NextApiHandler>>
 export const execHandler = (handlerFn: NextApiHandler) => {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      handlerFn(req, res);
+      await handlerFn(req, res)
     } catch (e) {
       handlerErr(res, e)
     }

@@ -1,23 +1,95 @@
 import type { NextApiRequest, NextApiResponse, NextApiHandler } from 'next'
+import type { Property } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+import prismaClient from '@backend/prisma'
+import {
+  CannotGetRecordListError,
+  CannotGetRecordError,
+} from '@backend/common/errors'
 
-const getPropertiesHandler: NextApiHandler = (req: NextApiRequest, res: NextApiResponse) => {
-  return res.status(200).json("Properties Index Api")
+const getPropertiesHandler: NextApiHandler<Property[]> = async (req: NextApiRequest, res: NextApiResponse) => {
+  const properties: Property[] = await prismaClient.property.findMany()
+
+  if (!properties) {
+    throw new CannotGetRecordListError("property")
+  }
+
+  return res.status(200).json(properties)
 }
 
-const getSinglePropertyHandler: NextApiHandler = (req: NextApiRequest, res: NextApiResponse) => {
-  return res.status(200).json("Get Detail Of Property Api")
+const getSinglePropertyHandler: NextApiHandler<Property> = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { pid } = req.query
+
+  const property: Property | null = await prismaClient.property.findUnique({
+    where: {
+      id: Number(pid)
+    }
+  })
+
+  if (!property) {
+    throw new CannotGetRecordError("property")
+  }
+
+  return res.status(200).json(property)
 }
 
-const createPropertyHandler: NextApiHandler = (req: NextApiRequest, res: NextApiResponse) => {
-  return res.status(200).json("Create Property Api")
+const createPropertyHandler: NextApiHandler<Property> = async (req: NextApiRequest, res: NextApiResponse) => {
+  let property: Prisma.PropertyCreateInput
+  property = req.body
+
+  // TODO: Add validator here
+  const createdProperty: Property = await prismaClient.property.create({
+    data: property
+  })
+
+  return res.status(200).json(createdProperty)
 }
 
-const updatePropertyHandler: NextApiHandler = (req: NextApiRequest, res: NextApiResponse) => {
-  return res.status(200).json("Update Property Api")
+const updatePropertyHandler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { pid } = req.query
+  let propertyUpdateInput: Prisma.PropertyUpdateInput
+  propertyUpdateInput = req.body
+
+  const property: Property | null = await prismaClient.property.findUnique({
+    where: {
+      id: Number(pid)
+    }
+  })
+
+  if (!property) {
+    throw new CannotGetRecordError("property")
+  }
+
+  // TODO: Add validator here
+  const updatedProperty: Property = await prismaClient.property.update({
+    where: {
+      id: Number(pid)
+    },
+    data: propertyUpdateInput
+  })
+
+  return res.status(200).json(updatedProperty)
 }
 
-const destroyPropertyHandler: NextApiHandler = (req: NextApiRequest, res: NextApiResponse) => {
-  return res.status(200).json("Destroy Property Api")
+const destroyPropertyHandler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { pid } = req.query
+  const property: Property | null = await prismaClient.property.findUnique({
+    where: {
+      id: Number(pid)
+    }
+  })
+
+  if (!property) {
+    throw new CannotGetRecordError("property")
+  }
+
+  const destroyedProperty = await prismaClient.property.delete({
+    where: {
+      id: Number(pid)
+    }
+  })
+
+  return res.status(200).json(destroyedProperty)
 }
 
 export {

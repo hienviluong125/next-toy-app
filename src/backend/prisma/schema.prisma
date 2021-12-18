@@ -1,0 +1,18 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Property {
+  @@map("properties")
+  id              Int     @map("id")               @default(autoincrement()) @id
+  address         String  @map("address")
+  price           Decimal @map("price")
+  apartmentNumber String  @map("apartment_number")
+  thumbnail       String  @map("thumbnail")
+  status          Boolean @map("status")           @default(true)
+}
