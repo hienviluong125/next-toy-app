@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse, NextApiHandler } from 'next'
 import type { Property } from '@prisma/client'
 import { Prisma } from '@prisma/client'
 import prismaClient from '@backend/prisma'
+import { validateProperty } from '@backend/validators/propertyValidator'
+import { formatJoiErrorMessage } from '@backend/utils/formatJoiErrorMessage'
 import {
   CannotGetRecordListError,
   CannotGetRecordError,
@@ -34,13 +36,16 @@ const getSinglePropertyHandler: NextApiHandler<Property> = async (req: NextApiRe
 }
 
 const createPropertyHandler: NextApiHandler<Property> = async (req: NextApiRequest, res: NextApiResponse) => {
-  let property: Prisma.PropertyCreateInput
-  property = req.body
+  let propertyInput: Prisma.PropertyCreateInput
+  propertyInput = req.body
 
-  // TODO: Add validator here
-  const createdProperty: Property = await prismaClient.property.create({
-    data: property
-  })
+  const { error } = validateProperty(propertyInput)
+
+  if (error) {
+    throw new Error(formatJoiErrorMessage(error));
+  }
+
+  const createdProperty: Property = await prismaClient.property.create({ data: propertyInput })
 
   return res.status(200).json(createdProperty)
 }
@@ -60,7 +65,12 @@ const updatePropertyHandler: NextApiHandler = async (req: NextApiRequest, res: N
     throw new CannotGetRecordError("property")
   }
 
-  // TODO: Add validator here
+  const { error } = validateProperty(propertyUpdateInput)
+
+  if (error) {
+    throw new Error(formatJoiErrorMessage(error));
+  }
+
   const updatedProperty: Property = await prismaClient.property.update({
     where: {
       id: Number(pid)
