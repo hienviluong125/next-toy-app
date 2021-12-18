@@ -1,18 +1,31 @@
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next'
+import { handlerErr } from './errorHandler';
 
 export type HttpMethods = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 export type MultiHandlers = Partial<Record<HttpMethods, NextApiHandler>>
 
+export const execHandler = (handlerFn: NextApiHandler) => {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
+    try {
+      handlerFn(req, res);
+    } catch (e) {
+      handlerErr(res, e)
+    }
+  }
+};
+
 export const execMultiHandlers = (req: NextApiRequest, res: NextApiResponse, handlers: MultiHandlers) => {
   const methodName: HttpMethods = req.method as HttpMethods
 
-  if (!methodName) res.status(404).json("Invalid method")
+  if (!methodName) {
+    return res.status(400).json({ status: 404, message: "Invalid method", errCode: "badRequest" })
+  }
 
   const handlerFn = handlers[methodName]
 
   if (handlerFn) {
-    handlerFn(req, res)
+    return execHandler(handlerFn)(req, res)
   } else {
-    res.status(404).json("Method not allowed")
+    return res.status(400).json({ status: 404, message: "Method not allowed", errCode: "badRequest" })
   }
 }
