@@ -16,3 +16,11 @@ model Property {
   thumbnail       String  @map("thumbnail")
   status          Boolean @map("status")           @default(true)
 }
+
+model User {
+  @@map("users")
+  id           Int      @map("id")         @default(autoincrement()) @id
+  email        String   @map("email")      @unique
+  name         String?  @map("name")
+  password     String   @map("password")
+}

@@ -8,8 +8,6 @@ const handlers: MultiHandlers = {
   "POST": createPropertyHandler
 }
 
-const handler = (req: NextApiRequest, res: NextApiResponse) => {
-  execMultiHandlers(req, res, handlers)
-}
+const handler = (req: NextApiRequest, res: NextApiResponse) => execMultiHandlers(req, res, handlers)
 
 export default handler
