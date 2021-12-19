@@ -13,27 +13,7 @@ const handleInvalidCrendetials = () => {
 }
 
 export default function middleware(req: NextRequest, event: NextFetchEvent) {
-  const url = req.nextUrl
-  const pathname = url.pathname
-
-  // login and register endpoint don't need to be protected
-  if (pathname.includes("/auth/login") || pathname.includes("/auth/register")) {
-    return NextResponse.next()
-  }
-
-  const authorizationHeader: string | null = req.headers.get("authorization")
-
-  if (!authorizationHeader) return handleInvalidCrendetials()
-
-  const [tokenType, token] = authorizationHeader.split(" ")
-
-  if (tokenType !== "Bearer") return handleInvalidCrendetials()
-
-  const { payload, error } = decodeToken(token)
-
-  if (error) return handleInvalidCrendetials()
-
-  //TODO: Set payload.userId as a global variable for all protected endpoints
+ //Todo: Need to add somethings here
 
   return NextResponse.next()
 }
