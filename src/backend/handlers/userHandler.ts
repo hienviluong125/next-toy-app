@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse, NextApiHandler } from 'next'
 import { RegistrationInput } from '@backend/validators/userValidator'
 import { validateRegistration } from '@backend/validators/userValidator'
-import { CannotProcessRecordError, InvalidCredentialsError } from '@backend/common/errors'
+import { CannotProcessRecordError } from '@backend/common/errors'
+import { generateAccessToken, generateRefreshToken } from '@backend/common/tokenProvider'
 import { hashSync } from 'bcryptjs'
 import prismaClient from '@backend/prisma'
 import { Prisma } from '@prisma/client'
@@ -39,7 +40,10 @@ const registerHanlder: NextApiHandler<RegistrationResponse> = async (req: NextAp
 
   if (!user) throw new CannotProcessRecordError("user")
 
-  return res.status(200).json({ accessToken: "FAKE ACCESS TOKEN", refreshToken: "FAKE REFRESH TOKEN" })
+  return res.status(200).json({
+    accessToken: generateAccessToken(user),
+    refreshToken: generateRefreshToken(user)
+  })
 }
 
 export {

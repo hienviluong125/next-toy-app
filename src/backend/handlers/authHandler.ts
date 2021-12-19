@@ -3,6 +3,7 @@ import { CredentialsInput } from '@backend/validators/userValidator'
 import { validateCrendetials } from '@backend/validators/userValidator'
 import { InvalidCredentialsError } from '@backend/common/errors'
 import { compareSync } from 'bcryptjs'
+import { generateAccessToken, generateRefreshToken } from '@backend/common/tokenProvider'
 import prismaClient from '@backend/prisma'
 
 type LoginResponse = {
@@ -27,7 +28,10 @@ const loginHandler: NextApiHandler<LoginResponse> = async (req: NextApiRequest, 
 
   if (!compareSync(credentialsInput.password, user.password)) throw new InvalidCredentialsError
 
-  return res.status(200).json({ accessToken: "FAKE ACCESS TOKEN", refreshToken: "FAKE REFRESH TOKEN" })
+  return res.status(200).json({
+    accessToken: generateAccessToken(user),
+    refreshToken: generateRefreshToken(user)
+  })
 }
 
 export {
