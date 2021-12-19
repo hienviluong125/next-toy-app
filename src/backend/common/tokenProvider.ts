@@ -1,6 +1,6 @@
 import type { User } from '@prisma/client'
 import type { SignOptions } from 'jsonwebtoken'
-import { sign as signJwt } from 'jsonwebtoken'
+import { sign as signJwt, verify } from 'jsonwebtoken'
 import { v4 as uuidV4 } from 'uuid'
 
 const SECRET = "JWT_SECRET"
@@ -20,4 +20,18 @@ export const generateAccessToken = (user: User): string => {
 
 export const generateRefreshToken = (user: User): string => {
   return uuidV4()
+}
+
+export const decodeToken = (token: string): { payload: AccessTokenPayload | null, error: string | null } => {
+  let resp: { payload: AccessTokenPayload | null, error: string | null } = { payload: null, error: null }
+
+  verify(token, SECRET, function(err, payload) {
+    if (err) {
+      resp.error = err.message
+    } else {
+      resp.payload = payload as AccessTokenPayload
+    }
+  });
+
+  return resp
 }
