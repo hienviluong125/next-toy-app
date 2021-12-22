@@ -6,14 +6,19 @@ import { InvalidCredentialsError } from './errors';
 import { decodeToken } from './tokenProvider';
 import prismaClient from './../prisma'
 
-
+// Types
 export type HttpMethods = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 export type HandlerCtx = {
   user: User | null
 }
 export type NextApiHandlerWithCtx<T = any> = (req: NextApiRequest, res: NextApiResponse<T>, ctx?: HandlerCtx) => void | Promise<void>
 export type MultiHandlers = Partial<Record<HttpMethods, NextApiHandler | NextApiHandlerWithCtx>>
+type ApiHandler = NextApiHandler | NextApiHandlerWithCtx
 
+// Compose middlewares
+export const composeHandlers = (fn1: (a: ApiHandler) => ApiHandler, ...fns: Array<(a: ApiHandler) => ApiHandler>) => fns.reduce((prevFn, nextFn) => value => prevFn(nextFn(value)), fn1)
+
+// Middlewares
 export const withAuthentication = (handlerFn: NextApiHandlerWithCtx) => {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const authorizationHeader = req.headers.authorization
@@ -36,7 +41,7 @@ export const withAuthentication = (handlerFn: NextApiHandlerWithCtx) => {
     if (payload) {
       const user = await prismaClient.user.findUnique({
         where: { id: payload.userId },
-        select: { email: true, name: true, id: true},
+        select: { email: true, name: true, id: true },
       })
 
       if (user) {
@@ -58,6 +63,7 @@ export const withErrorResponse = (handlerFn: NextApiHandler) => {
   }
 };
 
+// Execute multi handlers with the same endpoint
 export const withMultiHandlers = (req: NextApiRequest, res: NextApiResponse, handlers: MultiHandlers) => {
   const methodName: HttpMethods = req.method as HttpMethods
 

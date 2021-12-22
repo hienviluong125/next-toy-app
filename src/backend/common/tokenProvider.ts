@@ -7,6 +7,8 @@ import { serialize as serializeCookie } from 'cookie'
 import prismaClient from '@backend/prisma'
 
 const SECRET = "JWT_SECRET"
+const AT_EXPIRY = 15 * 60 // 15 mins
+const RT_EXPIRY = 7 * 24 * 60 * 60 // 7 days
 
 export type AccessTokenPayload = {
   userId: number
@@ -16,7 +18,7 @@ export const generateAccessToken = (userId: number): string => {
   const payload: AccessTokenPayload = { userId: userId }
   const signOptions: SignOptions = {
     algorithm: 'HS256',
-    expiresIn: 15 * 60, // 15 mins
+    expiresIn: AT_EXPIRY
   }
   return signJwt(payload, SECRET, signOptions)
 }
@@ -44,7 +46,7 @@ export const generateRefreshTokenCookie = (
     httpOnly = true,
     secure = process.env.NODE_ENV === 'production',
     path = '/api',
-    maxAge = 60 * 60, // 60 mins
+    maxAge = RT_EXPIRY,
     sameSite = 'lax',
   }: CookieSerializeOptions = {}
 ) =>

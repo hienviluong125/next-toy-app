@@ -45,7 +45,7 @@ const createPropertyHandler: NextApiHandlerWithCtx<Property> = async (req: NextA
   return res.status(200).json(createdProperty)
 }
 
-const updatePropertyHandler: NextApiHandlerWithCtx = async (req: NextApiRequest, res: NextApiResponse) => {
+const updatePropertyHandler: NextApiHandlerWithCtx<Property> = async (req: NextApiRequest, res: NextApiResponse) => {
   const { pid } = req.query
   let propertyUpdateInput: Prisma.PropertyUpdateInput
   propertyUpdateInput = req.body
@@ -72,7 +72,7 @@ const updatePropertyHandler: NextApiHandlerWithCtx = async (req: NextApiRequest,
   return res.status(200).json(updatedProperty)
 }
 
-const destroyPropertyHandler: NextApiHandlerWithCtx = async (req: NextApiRequest, res: NextApiResponse) => {
+const destroyPropertyHandler: NextApiHandlerWithCtx<Property> = async (req: NextApiRequest, res: NextApiResponse) => {
   const { pid } = req.query
   const property: Property | null = await prismaClient.property.findUnique({
     where: {
