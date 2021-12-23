@@ -4,7 +4,7 @@ import type { SignOptions } from 'jsonwebtoken'
 import { sign as signJwt, verify } from 'jsonwebtoken'
 import { v4 as uuidV4 } from 'uuid'
 import { serialize as serializeCookie } from 'cookie'
-import prismaClient from '@backend/prisma'
+import { set } from '@upstash/redis'
 
 const SECRET = "JWT_SECRET"
 const AT_EXPIRY = 15 * 60 // 15 mins
@@ -24,20 +24,13 @@ export const generateAccessToken = (userId: number): string => {
 }
 
 export const generateRefreshToken = async (userId: number) => {
-  const { token } = await prismaClient.refreshToken.upsert({
-    where: {
-      userId,
-    },
-    update: {
-      token: uuidV4(),
-    },
-    create: {
-      userId,
-      token: uuidV4(),
-    },
-  })
+  const token = uuidV4()
+  const { data } = await set(token, userId)
+  if (data === 'OK') {
+    return token
+  }
 
-  return token
+  return null
 }
 
 export const generateRefreshTokenCookie = (

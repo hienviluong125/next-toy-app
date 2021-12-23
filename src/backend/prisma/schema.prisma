@@ -23,15 +23,4 @@ model User {
   email        String   @map("email")      @unique
   name         String?  @map("name")
   password     String   @map("password")
-
-  refreshToken RefreshToken?
-}
-
-model RefreshToken {
-  @@map("refresh_tokens")
-  id           Int      @map("id")            @default(autoincrement()) @id
-  token        String   @map("token") @unique
-  userId       Int      @map("user_id")       @unique
-
-  user User @relation(fields: [userId], references: [id])
 }

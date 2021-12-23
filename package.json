@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@prisma/client": "^3.6.0",
+    "@upstash/redis": "^0.2.1",
     "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
     "cookie": "^0.4.1",

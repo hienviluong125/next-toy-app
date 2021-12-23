@@ -5,7 +5,7 @@ import { InvalidCredentialsError } from '@backend/common/errors'
 import { compareSync } from 'bcryptjs'
 import { generateAccessToken, generateRefreshTokenCookie, generateRefreshToken } from '@backend/common/tokenProvider'
 import prismaClient from '@backend/prisma'
-
+import { get, del } from '@upstash/redis'
 
 type LoginResponse = {
   accessToken: string
@@ -30,7 +30,13 @@ const loginHandler: NextApiHandler<LoginResponse> = async (req: NextApiRequest, 
   if (!compareSync(credentialsInput.password, user.password)) throw new InvalidCredentialsError
 
   const accessToken = generateAccessToken(user.id)
+
+  if (!accessToken) throw new InvalidCredentialsError
+
   const refreshToken = await generateRefreshToken(user.id)
+
+  if (!refreshToken)  throw new InvalidCredentialsError
+
   const refreshTokenCookie = generateRefreshTokenCookie(refreshToken)
 
   return res
@@ -41,32 +47,27 @@ const loginHandler: NextApiHandler<LoginResponse> = async (req: NextApiRequest, 
 
 const keepLoginHandler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const refreshToken = req.cookies.refreshToken
+
   if (!refreshToken) return res.status(404).end()
 
-  const userToken = await prismaClient.refreshToken.findUnique({
-    where: {
-      token: refreshToken
-    }
-  })
+  const { data, error } = await get(refreshToken)
 
-  if (!userToken) return res.status(404).end()
+  if (error) return res.status(404).end()
 
-  const accessToken = generateAccessToken(userToken.userId)
+  const userId = Number(data)
+  const accessToken = generateAccessToken(userId)
 
   return res.status(200).json({ accessToken })
 }
 
 const logoutHandler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const refreshToken = req.cookies.refreshToken
-  if (!refreshToken) {
-    return res.status(404).end()
-  }
 
-  await prismaClient.refreshToken.delete({
-    where: {
-      token: refreshToken
-    },
-  })
+  if (!refreshToken) return res.status(404).end()
+
+  const { error } = await del(refreshToken)
+
+  if (error) return res.status(404).end()
 
   const clearedRefreshTokenCookie = generateRefreshTokenCookie(refreshToken, { maxAge: 0 })
 
