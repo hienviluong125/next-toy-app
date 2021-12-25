@@ -4,7 +4,7 @@ import type { SignOptions } from 'jsonwebtoken'
 import { sign as signJwt, verify } from 'jsonwebtoken'
 import { v4 as uuidV4 } from 'uuid'
 import { serialize as serializeCookie } from 'cookie'
-import { set } from '@upstash/redis'
+import redisClient from './redisClient'
 
 const SECRET = "JWT_SECRET"
 const AT_EXPIRY = 15 * 60 // 15 mins
@@ -25,7 +25,7 @@ export const generateAccessToken = (userId: number): string => {
 
 export const generateRefreshToken = async (userId: number) => {
   const token = uuidV4()
-  const { data } = await set(token, userId)
+  const { data } = await redisClient.set(token, userId)
   if (data === 'OK') {
     return token
   }

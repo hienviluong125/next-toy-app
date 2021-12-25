@@ -5,7 +5,7 @@ import { InvalidCredentialsError } from '@backend/common/errors'
 import { compareSync } from 'bcryptjs'
 import { generateAccessToken, generateRefreshTokenCookie, generateRefreshToken } from '@backend/common/tokenProvider'
 import prismaClient from '@backend/prisma'
-import { get, del } from '@upstash/redis'
+import redisClient from '@backend/common/redisClient'
 
 type LoginResponse = {
   accessToken: string
@@ -50,7 +50,7 @@ const keepLoginHandler: NextApiHandler = async (req: NextApiRequest, res: NextAp
 
   if (!refreshToken) return res.status(404).end()
 
-  const { data, error } = await get(refreshToken)
+  const { data, error } = await redisClient.get(refreshToken)
 
   if (error) return res.status(404).end()
 
@@ -65,7 +65,7 @@ const logoutHandler: NextApiHandler = async (req: NextApiRequest, res: NextApiRe
 
   if (!refreshToken) return res.status(404).end()
 
-  const { error } = await del(refreshToken)
+  const { error } = await redisClient.del(refreshToken)
 
   if (error) return res.status(404).end()
 
