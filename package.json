@@ -8,6 +8,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@mui/material": "^5.2.5",
     "@prisma/client": "^3.6.0",
     "@upstash/redis": "^0.2.1",
     "axios": "^0.24.0",
