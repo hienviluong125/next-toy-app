@@ -14,7 +14,7 @@ const LoginForm: React.FC = () => {
     loginService({ email, password })
       .then(() => {
         router.push("/properties")
-      }).catch(() => {
+      }).catch((err) => {
         setError("Email or password is invalid")
       })
   }

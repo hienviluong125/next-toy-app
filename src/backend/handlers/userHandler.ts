@@ -1,16 +1,21 @@
 import type { NextApiRequest, NextApiResponse, NextApiHandler } from 'next'
 import { RegistrationInput } from '@backend/validators/userValidator'
 import { validateRegistration } from '@backend/validators/userValidator'
-import { CannotProcessRecordError } from '@backend/common/errors'
+import { CannotProcessRecordError, InvalidCredentialsError } from '@backend/common/errors'
 import { generateAccessToken, generateRefreshToken, generateRefreshTokenCookie } from '@backend/common/tokenProvider'
 import { hashSync } from 'bcryptjs'
 import prismaClient from '@backend/prisma'
 import { Prisma } from '@prisma/client'
+import { HandlerCtx, NextApiHandlerWithCtx } from '@backend/common/commonHandler'
 
 
 type RegistrationResponse = {
   accessToken: string
   refreshToken: string
+}
+
+const profileHandler: NextApiHandlerWithCtx = async (req: NextApiRequest, res: NextApiResponse, ctx?: HandlerCtx) => {
+  return res.status(200).json({ currentUser: ctx?.user })
 }
 
 const registerHanlder: NextApiHandler<RegistrationResponse> = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -42,6 +47,11 @@ const registerHanlder: NextApiHandler<RegistrationResponse> = async (req: NextAp
 
   const accessToken = generateAccessToken(user.id)
   const refreshToken = await generateRefreshToken(user.id)
+
+  if (!refreshToken || !accessToken) {
+    throw new InvalidCredentialsError
+  }
+
   const refreshTokenCookie = generateRefreshTokenCookie(refreshToken)
 
   return res
@@ -51,5 +61,6 @@ const registerHanlder: NextApiHandler<RegistrationResponse> = async (req: NextAp
 }
 
 export {
-  registerHanlder
+  registerHanlder,
+  profileHandler
 }

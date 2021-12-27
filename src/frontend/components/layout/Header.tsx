@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useEffect, useState } from 'react'
 import {
   AppBar,
   Box,
@@ -13,10 +13,24 @@ import {
 } from '@mui/material'
 import { useRouter } from 'next/router'
 import { logoutService } from '@frontend/services/authService'
+import { getProfileService } from '@frontend/services/userService'
+
+type CurrentUser = {
+  email: string
+  name?: string
+}
 
 const Header = () => {
   const router = useRouter()
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null)
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
+  const [currentUser, setCurrentUser] = useState<null | CurrentUser>(null)
+
+  useEffect(() => {
+    getProfileService()
+      .then(resp => {
+        setCurrentUser(resp.data.currentUser)
+      }).catch(err => console.log({err}))
+  }, [])
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget)
@@ -57,7 +71,7 @@ const Header = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title='Open settings'>
               <Button color="inherit" onClick={handleOpenUserMenu}>
-                {'currentUser'}
+                { currentUser?.email }
                 &nbsp;
                 <Avatar alt={'currentUser'} sx={{ width: 24, height: 24 }} />
               </Button>

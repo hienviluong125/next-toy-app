@@ -9,7 +9,10 @@ const CACHING_PAGES = [
 
 const AUTH_PAGES = [
   '/api/v1/properties',
-  '/api/v1/properties/[pid]'
+  '/api/v1/properties/[pid]',
+  '/api/v1/auth/keepLogin',
+  '/api/v1/profile',
+  '/api/v1/auth/logout'
 ]
 
 const verifyAuth = (req: NextRequest): boolean => {
@@ -41,8 +44,7 @@ const jsonResponse = (status: number, data?: any, init?: ResponseInit) => {
 
 export async function middleware(req: NextRequest) {
   const pageName = req.page.name as string
-  let canContinue: boolean = false
-
+  let canContinue: boolean = true
   if (AUTH_PAGES.includes(pageName)) {
     canContinue = await verifyAuth(req)
   }
@@ -51,7 +53,6 @@ export async function middleware(req: NextRequest) {
     return jsonResponse(404)
   }
 
-  canContinue = true
   if (req.method === 'GET' && CACHING_PAGES.includes(pageName)) {
     let { data } = await redisClient.get(req.nextUrl.pathname)
     if (data) {
