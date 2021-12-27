@@ -1,23 +1,32 @@
-import { MouseEvent } from 'react'
-import { Fragment } from 'react'
-import { logoutService } from '@frontend/services/authService'
-import { useRouter } from 'next/router'
+
+import type { Property } from '../../services/propertiesService'
+import { Fragment, useEffect, useState } from 'react'
+import { getPropertiesService } from '../../services/propertiesService'
+
 
 const PropertiesTable = () => {
-  const router = useRouter()
-  const onHandleClickLogout = (e: MouseEvent<HTMLButtonElement>): void => {
-    e.preventDefault()
-    logoutService()
-      .then(() => {
-        localStorage.removeItem("accessToken")
-        router.push("/login")
-      })
-      .catch(err => console.log(err))
-  }
+  const [properties, setProperties] = useState<Property[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    getPropertiesService()
+      .then(resp => {
+        setProperties(resp.data)
+        setIsLoading(false)
+      }).catch(err => console.log({err}))
+  }, [])
 
   return (
     <Fragment>
-      <div><h1>This is properties table</h1></div>
+      { !isLoading && properties && properties.map(property => (
+          <div key={property.id}>
+            <p>{property.address}</p>
+            <p>{property.apartmentNumber}</p>
+            <p>{property.price}</p>
+            <p>{property.status}</p>
+          </div>
+        ))
+      }
 
     </Fragment>
   )
