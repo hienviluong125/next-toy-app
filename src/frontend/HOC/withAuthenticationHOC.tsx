@@ -1,6 +1,8 @@
+import type { FC } from 'react'
+import { Container } from '@mui/material'
+import Header from '../components/layout/Header'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import type { FC } from 'react'
 
 type WithAuthenticationHOCFn = (Component: FC) => FC
 
@@ -16,7 +18,14 @@ const withAuthenticationHOC: WithAuthenticationHOCFn = (Component: FC) => {
       if (!accessToken) router.push('/login')
     }, [accessToken, router])
 
-    return accessToken ? <Component /> : null
+    return accessToken ? (
+      <div>
+        <Header />
+        <Container maxWidth="xl">
+          <Component />
+        </Container>
+      </div>
+    ) : null
   }
 
   return Authenticated

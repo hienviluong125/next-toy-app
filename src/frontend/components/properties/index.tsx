@@ -18,7 +18,7 @@ const PropertiesTable = () => {
   return (
     <Fragment>
       <div><h1>This is properties table</h1></div>
-      <button onClick={onHandleClickLogout}>Logout</button>
+
     </Fragment>
   )
 }

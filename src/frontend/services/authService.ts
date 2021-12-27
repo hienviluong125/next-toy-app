@@ -23,6 +23,11 @@ const storeAccessToken = (resp: AxiosResponse<AuthResponse>) => {
   return resp
 }
 
+const removeAccessToken = (resp: AxiosResponse) => {
+  localStorage.removeItem("accessToken")
+  return resp
+}
+
 export const loginService = (input: AuthInput): AuthResponsePromise => {
   return axios.request({
     method: "POST",
@@ -44,5 +49,5 @@ export const logoutService = (): Promise<AxiosResponse> => {
     method: "POST",
     url: "/api/v1/auth/logout",
     withCredentials: true
-  })
+  }).then(removeAccessToken)
 }
